@@ -1,41 +1,85 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import "./App.css";
 import { nanoid } from "nanoid";
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [todos, setTodos] = useState([{ id: nanoid(), title: "Learn React" }]);
+  const [todos, setTodos] = useState([
+    { id: nanoid(), todo: "Make a coffee", isDone: false, isEdited: false },
+  ]);
+
+  const toggleDone = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, isDone: !todo.isDone } : todo
+      )
+    );
+  };
+  const addTodo = (e) => {
+    e.preventDefault();
+    const { todo } = e.currentTarget.elements;
+    const newTodoObj = { id: nanoid(), todo: todo.value, isDone: false };
+    setTodos([...todos, newTodoObj]);
+    e.currentTarget.reset();
+  };
+
+  const editTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, isEdited: !todo.isEdited } : todo
+      )
+    );
+  };
+
+  const updateTodo = (e, id) => {
+    e.preventDefault();
+    const { todo } = e.currentTarget.elements;
+    setTodos(
+      todos.map((node) =>
+        node.id === id ? { ...node, todo: todo.value, isEdited: false } : node
+      )
+    );
+  };
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
 
   return (
     <div className="App">
+      <form onSubmit={addTodo}>
+        <input type="text" name="todo" />
+        <button>Add todo</button>
+      </form>
       <ul>
-        {todos.map(({ id, title }) => (
-          <li>
-            {id} {title}
+        {todos.map(({ id, todo, isDone, isEdited }) => (
+          <li key={id}>
+            {isEdited ? (
+              <form onSubmit={(e) => updateTodo(e, id)}>
+                <input type="text" name="todo" defaultValue={todo} />
+                <button>Save</button>
+              </form>
+            ) : (
+              <>
+                <input
+                  type="checkbox"
+                  name="done"
+                  id={id}
+                  checked={isDone}
+                  onChange={(e) => toggleDone(id)}
+                />
+                <label
+                  htmlFor={id}
+                  style={{
+                    textDecoration: `${isDone ? "line-through" : "none"}`,
+                  }}>
+                  {todo}
+                </label>
+                <button onClick={(e) => editTodo(id)}>Edit</button>
+                <button onClick={() => deleteTodo(id)}>Delete</button>
+              </>
+            )}
           </li>
         ))}
       </ul>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
   );
 }
